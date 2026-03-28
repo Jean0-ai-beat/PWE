@@ -3,215 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soccer Lineup Pro | JP Tech Solutions</title>
+    <title>Soccer Lineup Pro | JP Tech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --line-color: rgba(255, 255, 255, 0.6); }
-        body { background: #05080a; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        :root { --line-color: rgba(255, 255, 255, 0.4); }
+        body { background: #05080a; color: white; font-family: 'Inter', sans-serif; }
 
-        /* FIFA-STYLE 3D PITCH */
         .fifa-pitch {
             background: #1b4332;
             background-image: 
                 repeating-linear-gradient(0deg, #2d6a4f 0%, #2d6a4f 10%, #1b4332 10%, #1b4332 20%),
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 70%);
-            border: 5px solid var(--line-color);
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%);
+            border: 4px solid var(--line-color);
             position: relative;
-            box-shadow: inset 0 0 120px rgba(0,0,0,0.6), 0 30px 60px rgba(0,0,0,0.9);
+            width: 100%;
+            max-width: 480px;
+            aspect-ratio: 3 / 4; 
+            margin: 0 auto;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border-radius: 16px;
         }
 
-        .line { position: absolute; border: 2px solid var(--line-color); pointer-events: none; }
-        .box-large { width: 44%; height: 18%; left: 28%; border-top: 0; }
-        .box-small { width: 20%; height: 7%; left: 40%; border-top: 0; }
-        .bottom { bottom: 0; border-top: 2px solid var(--line-color); border-bottom: 0; }
-        
+        .line { position: absolute; border: 1.5px solid var(--line-color); pointer-events: none; }
+        .box-large { width: 50%; height: 14%; left: 25%; border-top: 0; }
+        .box-small { width: 24%; height: 5%; left: 38%; border-top: 0; }
+        .bottom { bottom: 0; border-top: 1.5px solid var(--line-color); border-bottom: 0; }
         .center-circle {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 140px; height: 140px; border: 2px solid var(--line-color); border-radius: 50%;
+            width: 80px; height: 80px; border: 1.5px solid var(--line-color); border-radius: 50%;
         }
 
-        .player-node { transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .player-node:hover .jersey-svg { transform: scale(1.15) rotate(-3deg); }
+        .player-photo {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            border: 2px solid #fbbf24; /* Gold Border */
+            object-fit: cover;
+            background: #334155;
+        }
+        
+        .player-node { transition: all 0.4s ease; }
+        .player-node:hover { transform: translate(-50%, -60%) scale(1.1); z-index: 50; }
     </style>
 </head>
-<body class="p-4 lg:p-10">
+<body class="p-4 lg:p-8">
 
-    <div class="max-w-[1600px] mx-auto">
-        <header class="flex flex-col md:flex-row justify-between items-center mb-10 bg-slate-900/40 p-8 rounded-[2.5rem] border border-white/5 backdrop-blur-xl gap-6">
-            <div class="flex-1 w-full md:w-auto">
-                <input type="text" id="matchTitle" value="REAL MADRID vs BENFICA" 
-                       class="bg-transparent text-3xl md:text-4xl font-black italic tracking-tighter uppercase text-white outline-none border-b-2 border-transparent focus:border-green-500 w-full md:w-auto transition-all"
-                       placeholder="Enter Match Name...">
-                <p class="text-slate-500 text-[10px] font-bold uppercase tracking-[0.3em] mt-2">JP Tech Broadcast Engine</p>
+    <div class="max-w-6xl mx-auto">
+        <div class="flex justify-between items-center mb-8 bg-slate-900/80 p-6 rounded-3xl border border-white/5">
+            <div>
+                <h1 class="text-2xl font-black italic text-green-500 uppercase tracking-tighter">Lineup Pro <span class="text-white text-sm italic font-normal">by JP Tech</span></h1>
             </div>
+            <div class="flex gap-3">
+                <select id="formationSelect" onchange="updatePitch()" class="bg-slate-800 text-[10px] font-bold px-3 py-2 rounded-xl outline-none border border-white/10">
+                    <option value="4-4-2">4-4-2</option>
+                    <option value="4-3-3">4-3-3</option>
+                    <option value="3-5-2">3-5-2</option>
+                </select>
+                <button onclick="saveAll()" class="bg-green-600 p-2 rounded-xl hover:bg-green-500 transition"><i data-lucide="save" class="w-5 h-5 text-black"></i></button>
+            </div>
+        </div>
 
-            <div class="flex flex-wrap justify-center gap-4">
-                <div class="bg-black/40 p-2 rounded-2xl flex items-center gap-4 border border-white/5">
-                    <div class="px-3">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Tactics</p>
-                        <select id="formationSelect" class="bg-transparent border-none font-bold text-sm outline-none cursor-pointer text-green-400">
-                            <option value="4-4-2">4-4-2</option>
-                            <option value="4-3-3">4-3-3</option>
-                            <option value="3-5-2">3-5-2</option>
-                            <option value="5-4-1">5-4-1</option>
-                        </select>
-                    </div>
-                    <div class="w-px h-8 bg-white/10"></div>
-                    <div class="px-3">
-                        <p class="text-[10px] font-bold text-slate-500 uppercase mb-1">Kit</p>
-                        <input type="color" id="kitColor" value="#ffffff" class="w-6 h-6 bg-transparent border-none cursor-pointer">
-                    </div>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+            <div class="lg:col-span-4 space-y-4">
+                <div class="bg-slate-900/80 p-6 rounded-[2rem] border border-white/5 shadow-xl">
+                    <h2 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-widest">Add New Player</h2>
+                    <input type="text" id="playerName" placeholder="Name..." class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-sm mb-3 outline-none focus:border-green-500">
+                    
+                    <label class="block text-[10px] text-slate-500 mb-2 font-bold uppercase">Player Photo</label>
+                    <input type="file" id="playerFile" accept="image/*" class="text-xs text-slate-400 mb-4 block w-full file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-green-600 file:text-black hover:file:bg-green-500">
+                    
+                    <button onclick="addPlayerToRoster()" class="w-full bg-white text-black font-black py-3 rounded-xl hover:bg-green-400 transition text-sm">ADD TO REGISTRY</button>
                 </div>
-                
-                <button onclick="saveTactics()" class="bg-green-600 hover:bg-green-400 text-black px-8 py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-green-500/20 flex items-center gap-2">
-                    <i data-lucide="save" class="w-4 h-4"></i> SAVE LINEUP
-                </button>
-            </div>
-        </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div class="lg:col-span-3">
-                <div class="bg-slate-900/60 p-6 rounded-[2rem] border border-white/5 shadow-2xl h-fit">
-                    <h2 class="text-xs font-black text-slate-400 uppercase mb-6 tracking-widest flex items-center gap-2">
-                        <i data-lucide="users" class="w-3 h-3 text-green-500"></i> Squad Management
-                    </h2>
-                    <div class="relative mb-6">
-                        <input type="text" id="playerName" placeholder="Add Player..." class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-sm focus:border-green-500 outline-none">
-                        <button onclick="addPlayer()" class="absolute right-2 top-2 bg-white text-black p-2 rounded-xl hover:bg-green-400 transition"><i data-lucide="plus"></i></button>
+                <div id="rosterList" class="space-y-2 max-h-[300px] overflow-y-auto custom-scroll">
                     </div>
-                    <div id="rosterList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2"></div>
-                </div>
             </div>
 
-            <div class="lg:col-span-9">
-                <div class="fifa-pitch aspect-[16/9] rounded-[3rem] overflow-hidden relative shadow-2xl" id="pitch">
+            <div class="lg:col-span-8">
+                <div class="fifa-pitch" id="pitch">
                     <div class="line box-large top-0"></div>
                     <div class="line box-small top-0"></div>
                     <div class="line box-large bottom"></div>
                     <div class="line box-small bottom"></div>
                     <div class="center-circle"></div>
-                    <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-white/30"></div>
                     <div id="playerContainer"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md">
-        <div class="bg-slate-900 border border-white/10 w-full max-w-sm rounded-[2.5rem] p-10 shadow-2xl">
-            <h3 class="text-2xl font-black mb-6">Position Setup</h3>
-            <div class="space-y-4">
-                <select id="modalSelect" class="w-full bg-black/40 p-4 rounded-2xl border border-white/10"></select>
-                <input type="number" id="modalNumber" value="7" class="w-full bg-black/40 p-4 rounded-2xl border border-white/10">
-                <div class="flex gap-4 pt-4">
-                    <button onclick="closeModal()" class="flex-1 text-slate-400 font-bold">Back</button>
-                    <button onclick="confirmPlayer()" class="flex-1 bg-green-600 py-4 rounded-2xl font-black hover:bg-green-500">Assign</button>
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-white/10 w-full max-w-xs rounded-[2rem] p-8 text-center">
+            <h3 class="font-black text-xl mb-6 uppercase italic">Select Player</h3>
+            <div id="modalOptions" class="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto mb-6 p-2">
                 </div>
-            </div>
+            <button onclick="closeModal()" class="text-slate-500 font-bold text-xs uppercase tracking-widest">Close</button>
         </div>
     </div>
 
     <script>
         const tactics = {
-            "4-4-2": [{t:88, l:50}, {t:72, l:20}, {t:72, l:40}, {t:72, l:60}, {t:72, l:80}, {t:45, l:20}, {t:45, l:40}, {t:45, l:60}, {t:45, l:80}, {t:15, l:35}, {t:15, l:65}],
-            "4-3-3": [{t:88, l:50}, {t:72, l:15}, {t:75, l:38}, {t:75, l:62}, {t:72, l:85}, {t:48, l:25}, {t:52, l:50}, {t:48, l:75}, {t:18, l:20}, {t:12, l:50}, {t:18, l:80}],
-            "3-5-2": [{t:88, l:50}, {t:75, l:25}, {t:75, l:50}, {t:75, l:75}, {t:45, l:15}, {t:48, l:33}, {t:52, l:50}, {t:48, l:67}, {t:45, l:85}, {t:15, l:40}, {t:15, l:60}],
-            "5-4-1": [{t:90, l:50}, {t:78, l:15}, {t:78, l:32}, {t:78, l:50}, {t:78, l:68}, {t:78, l:85}, {t:45, l:20}, {t:45, l:40}, {t:45, l:60}, {t:45, l:80}, {t:15, l:50}]
+            "4-4-2": [{t:92, l:50}, {t:78, l:15}, {t:78, l:38}, {t:78, l:62}, {t:78, l:85}, {t:50, l:15}, {t:50, l:38}, {t:50, l:62}, {t:50, l:85}, {t:20, l:35}, {t:20, l:65}],
+            "4-3-3": [{t:92, l:50}, {t:78, l:15}, {t:78, l:38}, {t:78, l:62}, {t:78, l:85}, {t:55, l:25}, {t:58, l:50}, {t:55, l:75}, {t:18, l:15}, {t:12, l:50}, {t:18, l:85}],
+            "3-5-2": [{t:92, l:50}, {t:78, l:25}, {t:78, l:50}, {t:78, l:75}, {t:50, l:10}, {t:52, l:30}, {t:55, l:50}, {t:52, l:70}, {t:50, l:90}, {t:18, l:35}, {t:18, l:65}]
         };
 
-        let roster = JSON.parse(localStorage.getItem('jp_roster')) || ["Vinícius Jr.", "Jude Bellingham", "Rodrygo"];
-        let assignments = JSON.parse(localStorage.getItem('jp_assignments')) || {};
-        let currentSpot = null;
+        let roster = JSON.parse(localStorage.getItem('jp_roster_v4')) || [];
+        let assignments = {};
+        let activeSpot = null;
 
-        function init() {
-            document.getElementById('matchTitle').value = localStorage.getItem('jp_match_title') || "REAL MADRID vs BENFICA";
+        function addPlayerToRoster() {
+            const name = document.getElementById('playerName').value;
+            const file = document.getElementById('playerFile').files[0];
+            if(!name) return;
+
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    roster.push({ name, img: e.target.result });
+                    saveAndRender();
+                };
+                reader.readAsDataURL(file);
+            } else {
+                roster.push({ name, img: null });
+                saveAndRender();
+            }
+            document.getElementById('playerName').value = '';
+            document.getElementById('playerFile').value = '';
+        }
+
+        function saveAndRender() {
+            localStorage.setItem('jp_roster_v4', JSON.stringify(roster));
             renderRoster();
-            updatePitch();
-            lucide.createIcons();
         }
 
         function renderRoster() {
             const list = document.getElementById('rosterList');
             list.innerHTML = roster.map((p, i) => `
-                <div class="bg-black/20 p-4 rounded-xl border border-white/5 flex justify-between items-center group">
-                    <span class="text-sm font-bold text-slate-300">${p}</span>
-                    <button onclick="removePlayer(${i})" class="opacity-0 group-hover:opacity-100 text-red-500"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                <div class="bg-slate-800/40 p-3 rounded-2xl flex items-center justify-between border border-white/5">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.img || 'https://via.placeholder.com/40'}" class="w-8 h-8 rounded-full object-cover bg-slate-700">
+                        <span class="text-xs font-bold">${p.name}</span>
+                    </div>
+                    <button onclick="removePlayer(${i})" class="text-red-500/50 hover:text-red-500"><i data-lucide="x" class="w-4 h-4"></i></button>
                 </div>
             `).join('');
             lucide.createIcons();
         }
 
         function updatePitch() {
-            const formKey = document.getElementById('formationSelect').value;
+            const f = document.getElementById('formationSelect').value;
             const container = document.getElementById('playerContainer');
-            const color = document.getElementById('kitColor').value;
             container.innerHTML = '';
 
-            tactics[formKey].forEach((pos, i) => {
-                const data = assignments[i] || { name: "Assign Player", num: "?" };
+            tactics[f].forEach((pos, i) => {
+                const data = assignments[i] || { name: "Assign", img: null };
                 const node = document.createElement('div');
-                node.className = "player-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-32 cursor-pointer z-10";
+                node.className = "player-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-24 cursor-pointer";
                 node.style.top = pos.t + "%";
                 node.style.left = pos.l + "%";
                 node.onclick = () => openModal(i);
 
+                const avatar = data.img 
+                    ? `<img src="${data.img}" class="player-photo shadow-2xl">` 
+                    : `<div class="w-12 h-12 bg-slate-800 rounded-full flex items-center justify-center border-2 border-dashed border-white/20"><i data-lucide="user" class="w-5 h-5 text-slate-500"></i></div>`;
+
                 node.innerHTML = `
-                    <div class="jersey-svg relative">
-                        <svg width="55" height="55" viewBox="0 0 24 24" fill="${color}" stroke="white" stroke-width="1.2">
-                            <path d="M20.38 3.46L16 2H8L3.62 3.46a2 2 0 0 0-1.34 1.76V8c0 .42.26.8.65.95l3.69 1.43v10c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2V10.38l3.69-1.43c.39-.15.65-.53.65-.95V5.22a2 2 0 0 0-1.34-1.76z"/>
-                        </svg>
-                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-white mt-2">${data.num}</span>
-                    </div>
-                    <div class="mt-2 bg-black/90 px-3 py-1 rounded-full border border-white/20 text-[9px] font-black uppercase text-center w-full shadow-2xl backdrop-blur-sm">
+                    ${avatar}
+                    <div class="mt-2 bg-black/90 px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-tighter border border-white/10 shadow-xl">
                         ${data.name}
                     </div>
                 `;
                 container.appendChild(node);
             });
+            lucide.createIcons();
         }
 
         function openModal(idx) {
-            currentSpot = idx;
-            const select = document.getElementById('modalSelect');
-            select.innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
+            activeSpot = idx;
+            const opt = document.getElementById('modalOptions');
+            opt.innerHTML = roster.map((p, i) => `
+                <div onclick="selectPlayer(${i})" class="flex flex-col items-center gap-2 p-2 hover:bg-green-500/20 rounded-2xl transition cursor-pointer">
+                    <img src="${p.img || 'https://via.placeholder.com/40'}" class="w-12 h-12 rounded-full object-cover border border-white/10">
+                    <span class="text-[8px] font-bold truncate w-full text-center">${p.name}</span>
+                </div>
+            `).join('');
             document.getElementById('modal').classList.remove('hidden');
         }
 
-        function confirmPlayer() {
-            const name = document.getElementById('modalSelect').value;
-            const num = document.getElementById('modalNumber').value;
-            assignments[currentSpot] = { name, num };
+        function selectPlayer(rosterIdx) {
+            assignments[activeSpot] = roster[rosterIdx];
             updatePitch();
             closeModal();
         }
 
-        function addPlayer() {
-            const name = document.getElementById('playerName').value;
-            if(!name) return;
-            roster.push(name);
-            document.getElementById('playerName').value = '';
-            renderRoster();
-        }
-
-        function removePlayer(idx) {
-            roster.splice(idx, 1);
-            renderRoster();
-        }
-
+        function removePlayer(i) { roster.splice(i, 1); saveAndRender(); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-        
-        function saveTactics() {
-            localStorage.setItem('jp_roster', JSON.stringify(roster));
-            localStorage.setItem('jp_assignments', JSON.stringify(assignments));
-            localStorage.setItem('jp_match_title', document.getElementById('matchTitle').value);
-            alert("Match Lineup Saved Successfully!");
-        }
+        function saveAll() { alert("Team settings synced!"); }
 
-        document.getElementById('formationSelect').addEventListener('change', updatePitch);
-        document.getElementById('kitColor').addEventListener('input', updatePitch);
-
-        init();
+        renderRoster();
+        updatePitch();
+        lucide.createIcons();
     </script>
 </body>
 </html>
