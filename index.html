@@ -3,190 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soccer Lineup Pro | JP Tech</title>
+    <title>Soccer Lineup Pro | JP Tech Solutions</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        .pitch {
-            background: #2e7d32;
-            background-image: repeating-linear-gradient(90deg, #2e7d32, #2e7d32 10%, #388e3c 10%, #388e3c 20%);
-            border: 4px solid white;
+        :root {
+            --pitch-green: #1a472a;
+            --line-white: rgba(255, 255, 255, 0.8);
+        }
+        body { background-color: #0f172a; color: white; font-family: 'Inter', sans-serif; }
+        
+        /* Professional Pitch Styling */
+        .pitch-container {
+            background: var(--pitch-green);
+            background-image: repeating-linear-gradient(
+                to bottom,
+                #2d5a27 0%, #2d5a27 10%,
+                #1f401b 10%, #1f401b 20%
+            );
+            border: 5px solid var(--line-white);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
             position: relative;
-            overflow: hidden;
         }
-        .pitch::after {
-            content: '';
+
+        .penalty-box {
             position: absolute;
-            top: 50%; left: 0; right: 0; height: 2px;
-            background: rgba(255,255,255,0.5);
+            left: 50%; transform: translateX(-50%);
+            border: 2px solid var(--line-white);
+            width: 40%; height: 15%;
         }
-        .center-circle {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80px; height: 80px;
-            border: 2px solid rgba(255,255,255,0.5);
-            border-radius: 50%;
+        .top-box { top: 0; border-top: 0; }
+        .bottom-box { bottom: 0; border-bottom: 0; }
+
+        /* Player Pulse Animation */
+        .player-active {
+            animation: pulse 2s infinite;
         }
-        .player-slot {
-            transition: all 0.3s ease;
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
         }
-        .dragging { opacity: 0.5; }
     </style>
 </head>
-<body class="bg-slate-900 text-white min-h-screen">
+<body class="p-4 md:p-10">
 
-    <div class="max-w-6xl mx-auto p-4 lg:p-8">
-        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+    <div class="max-w-7xl mx-auto">
+        <div class="flex flex-col md:flex-row justify-between items-end mb-10 gap-6">
             <div>
-                <h1 class="text-3xl font-bold text-green-400 tracking-tight">Soccer Lineup Pro</h1>
-                <p class="text-slate-400 text-sm">Drag players from the squad to the pitch</p>
+                <span class="text-green-500 font-black tracking-widest text-xs uppercase">JP Tech Sport-Engine</span>
+                <h1 class="text-5xl font-extrabold tracking-tighter italic">LINEUP<span class="text-green-500">PRO</span></h1>
             </div>
             
-            <div class="flex flex-wrap gap-3">
-                <div class="flex items-center bg-slate-800 p-2 rounded-lg border border-slate-700">
-                    <span class="text-xs mr-2 text-slate-400 uppercase font-bold">Kit Color</span>
-                    <input type="color" id="kitColor" value="#ffffff" class="w-8 h-8 bg-transparent border-none cursor-pointer">
+            <div class="flex flex-wrap gap-4 bg-slate-800/50 p-4 rounded-2xl backdrop-blur-md border border-slate-700">
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-slate-500">Formation</label>
+                    <select id="formationSelect" class="w-full bg-slate-900 border-none rounded-lg px-3 py-2 text-sm">
+                        <option value="4-4-2">4-4-2 Classic</option>
+                        <option value="4-3-3">4-3-3 Attack</option>
+                        <option value="3-5-2">3-5-2 Controlled</option>
+                        <option value="5-4-1">5-4-1 Defensive</option>
+                    </select>
                 </div>
-                <select id="formationSelect" class="bg-slate-800 border border-slate-700 px-4 py-2 rounded-lg outline-none focus:border-green-500 text-sm">
-                    <option value="4-4-2">4-4-2</option>
-                    <option value="4-3-3">4-3-3</option>
-                    <option value="3-5-2">3-5-2</option>
-                </select>
-                <button onclick="window.print()" class="bg-green-600 hover:bg-green-500 px-4 py-2 rounded-lg flex items-center gap-2 text-sm font-bold transition">
-                    <i data-lucide="camera" class="w-4 h-4"></i> Save Image
+                <div class="space-y-1">
+                    <label class="text-[10px] uppercase font-bold text-slate-500">Kit Color</label>
+                    <input type="color" id="kitColor" value="#ffffff" class="block w-full h-9 bg-transparent border-none cursor-pointer">
+                </div>
+                <button onclick="saveLineup()" class="self-end bg-green-600 hover:bg-green-500 px-6 py-2 rounded-lg font-bold transition flex items-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i> Save
                 </button>
             </div>
-        </header>
+        </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-            <div class="lg:col-span-1 space-y-6">
-                <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 shadow-xl">
-                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-4 flex items-center gap-2">
-                        <i data-lucide="plus-circle" class="w-4 h-4"></i> Add Player
-                    </h2>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div class="lg:col-span-8">
+                <div class="pitch-container aspect-[3/4] md:aspect-[4/3] rounded-xl overflow-hidden" id="pitch">
+                    <div class="penalty-box top-box"></div>
+                    <div class="penalty-box bottom-box"></div>
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 border-2 border-white/50 rounded-full"></div>
+                    <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-white/50"></div>
+                    
+                    </div>
+            </div>
+
+            <div class="lg:col-span-4 space-y-6">
+                <div class="bg-slate-800 p-6 rounded-3xl border border-slate-700 shadow-2xl">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <i data-lucide="users" class="text-green-500"></i> Roster Management
+                    </h3>
+                    
                     <div class="flex gap-2 mb-6">
-                        <input type="text" id="playerNameInput" placeholder="Name..." class="flex-1 bg-slate-900 border border-slate-700 p-2 rounded text-sm focus:border-blue-500 outline-none">
-                        <button onclick="addPlayerToBench()" class="bg-blue-600 px-3 rounded hover:bg-blue-500 transition">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        <input type="text" id="pName" placeholder="Player Name" class="flex-1 bg-slate-900 border border-slate-700 p-3 rounded-xl text-sm outline-none focus:ring-2 ring-green-500">
+                        <button onclick="addToRoster()" class="bg-blue-600 p-3 rounded-xl hover:bg-blue-500 transition">
+                            <i data-lucide="user-plus"></i>
                         </button>
                     </div>
 
-                    <h2 class="text-sm font-bold uppercase text-slate-400 mb-2">Bench (Draggable)</h2>
-                    <div id="bench" class="space-y-2 min-h-[200px]">
+                    <div id="rosterList" class="space-y-3 max-h-[400px] overflow-y-auto pr-2">
                         </div>
                 </div>
-            </div>
-
-            <div class="lg:col-span-3">
-                <div class="pitch w-full aspect-[4/5] md:aspect-[4/3] rounded-lg shadow-2xl relative" id="soccerPitch">
-                    <div class="center-circle"></div>
-                    </div>
             </div>
         </div>
     </div>
 
     <script>
-        lucide.createIcons();
-
         const formations = {
-            "4-4-2": [
-                {t: 88, l: 50, label: "GK"},
-                {t: 70, l: 15}, {t: 70, l: 38}, {t: 70, l: 62}, {t: 70, l: 85},
-                {t: 40, l: 15}, {t: 40, l: 38}, {t: 40, l: 62}, {t: 40, l: 85},
-                {t: 15, l: 35}, {t: 15, l: 65}
-            ],
-            "4-3-3": [
-                {t: 88, l: 50, label: "GK"},
-                {t: 70, l: 15}, {t: 70, l: 38}, {t: 70, l: 62}, {t: 70, l: 85},
-                {t: 45, l: 25}, {t: 45, l: 50}, {t: 45, l: 75},
-                {t: 18, l: 15}, {t: 12, l: 50}, {t: 18, l: 85}
-            ],
-            "3-5-2": [
-                {t: 88, l: 50, label: "GK"},
-                {t: 70, l: 25}, {t: 70, l: 50}, {t: 70, l: 75},
-                {t: 45, l: 10}, {t: 45, l: 30}, {t: 45, l: 50}, {t: 45, l: 70}, {t: 45, l: 90},
-                {t: 15, l: 35}, {t: 15, l: 65}
-            ]
+            "4-4-2": [{t:90, l:50}, {t:75, l:20}, {t:75, l:40}, {t:75, l:60}, {t:75, l:80}, {t:45, l:20}, {t:45, l:40}, {t:45, l:60}, {t:45, l:80}, {t:15, l:35}, {t:15, l:65}],
+            "4-3-3": [{t:90, l:50}, {t:75, l:20}, {t:75, l:40}, {t:75, l:60}, {t:75, l:80}, {t:50, l:30}, {t:55, l:50}, {t:50, l:70}, {t:15, l:15}, {t:10, l:50}, {t:15, l:85}],
+            "3-5-2": [{t:90, l:50}, {t:75, l:30}, {t:75, l:50}, {t:75, l:70}, {t:45, l:10}, {t:45, l:30}, {t:45, l:50}, {t:45, l:70}, {t:45, l:90}, {t:15, l:40}, {t:15, l:60}]
         };
 
-        const pitch = document.getElementById('soccerPitch');
-        const bench = document.getElementById('bench');
-        const kitColorInput = document.getElementById('kitColor');
-
-        function renderPitch(type) {
-            pitch.innerHTML = '<div class="center-circle"></div>';
-            const positions = formations[type];
+        function renderPitch() {
+            const f = document.getElementById('formationSelect').value;
+            const pitch = document.getElementById('pitch');
+            const color = document.getElementById('kitColor').value;
             
-            positions.forEach((pos, i) => {
-                const slot = document.createElement('div');
-                slot.className = "player-slot absolute transform -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-20 text-center";
-                slot.style.top = pos.t + "%";
-                slot.style.left = pos.l + "%";
-                slot.dataset.index = i;
+            // Keep the markings, clear the players
+            const markings = pitch.querySelectorAll('.penalty-box, .absolute');
+            pitch.innerHTML = '';
+            markings.forEach(m => pitch.appendChild(m));
 
-                slot.innerHTML = `
-                    <div class="jersey-icon w-10 h-10 rounded-full flex items-center justify-center font-bold border-2 border-black shadow-lg mb-1 transition-colors duration-300" 
-                         style="background-color: ${kitColorInput.value}; color: #000">
-                        ${pos.label || (i + 1)}
-                    </div>
-                    <div class="player-name-label bg-black/70 text-white text-[10px] px-2 py-0.5 rounded uppercase font-bold min-h-[1.2rem] min-w-[50px]">
-                        Empty
+            formations[f].forEach((pos, i) => {
+                const div = document.createElement('div');
+                div.className = "absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center cursor-pointer group w-24";
+                div.style.top = pos.t + "%";
+                div.style.left = pos.l + "%";
+                
+                div.innerHTML = `
+                    <svg class="w-12 h-12 drop-shadow-lg group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="${color}" stroke="black" stroke-width="1">
+                        <path d="M20 9v11a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V9M9 22V12h6v10M2 10.6L12 2l10 8.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <div class="mt-1 bg-black/80 px-2 py-0.5 rounded border border-white/20 text-[10px] font-bold uppercase tracking-wider text-center w-full truncate player-target" ondragover="event.preventDefault()" ondrop="dropPlayer(event)">
+                        Assign Player
                     </div>
                 `;
-
-                // Drop events
-                slot.ondragover = (e) => e.preventDefault();
-                slot.ondrop = (e) => {
-                    const name = e.dataTransfer.getData("text/plain");
-                    slot.querySelector('.player-name-label').innerText = name;
-                };
-
-                pitch.appendChild(slot);
+                pitch.appendChild(div);
             });
         }
 
-        function addPlayerToBench() {
-            const nameInput = document.getElementById('playerNameInput');
-            if(!nameInput.value) return;
-
-            const div = document.createElement('div');
-            div.className = "bg-slate-700 p-3 rounded-lg flex justify-between items-center cursor-move hover:bg-slate-600 border border-slate-600 transition";
-            div.draggable = true;
-            div.innerHTML = `
-                <span class="text-sm font-medium">${nameInput.value}</span>
-                <i data-lucide="grip-horizontal" class="w-4 h-4 text-slate-500"></i>
-            `;
-
-            div.ondragstart = (e) => {
-                e.dataTransfer.setData("text/plain", nameInput.value);
-                div.classList.add('dragging');
-            };
-            div.ondragend = () => div.classList.remove('dragging');
-
-            bench.appendChild(div);
-            nameInput.value = '';
+        function addToRoster() {
+            const name = document.getElementById('pName').value;
+            if(!name) return;
+            const list = document.getElementById('rosterList');
+            const item = document.createElement('div');
+            item.className = "bg-slate-700/50 p-3 rounded-xl flex justify-between items-center border border-slate-600 hover:border-green-500 cursor-grab active:cursor-grabbing transition";
+            item.draggable = true;
+            item.dataset.name = name;
+            item.ondragstart = (e) => e.dataTransfer.setData("text", name);
+            item.innerHTML = `<span>${name}</span> <i data-lucide="grip-vertical" class="w-4 h-4 text-slate-500"></i>`;
+            list.appendChild(item);
+            document.getElementById('pName').value = '';
             lucide.createIcons();
         }
 
-        kitColorInput.addEventListener('input', (e) => {
-            document.querySelectorAll('.jersey-icon').forEach(j => {
-                j.style.backgroundColor = e.target.value;
-                // Brightness check for text color
-                const color = e.target.value.substring(1);
-                const rgb = parseInt(color, 16);
-                const r = (rgb >> 16) & 0xff;
-                const g = (rgb >>  8) & 0xff;
-                const b = (rgb >>  0) & 0xff;
-                const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-                j.style.color = luma < 128 ? '#fff' : '#000';
-            });
-        });
+        function dropPlayer(e) {
+            e.preventDefault();
+            const name = e.dataTransfer.getData("text");
+            e.target.innerText = name;
+            e.target.classList.add('text-green-400', 'border-green-500');
+        }
 
-        document.getElementById('formationSelect').addEventListener('change', (e) => renderPitch(e.target.value));
+        function saveLineup() {
+            alert("Lineup settings cached! (Mockup for JP Tech implementation)");
+        }
 
-        // Initial Build
-        renderPitch("4-4-2");
+        document.getElementById('formationSelect').addEventListener('change', renderPitch);
+        document.getElementById('kitColor').addEventListener('input', renderPitch);
+        
+        renderPitch();
+        lucide.createIcons();
     </script>
 </body>
 </html>
