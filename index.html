@@ -3,149 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Soccer Lineup Pro | JP Tech</title>
+    <title>Elite Lineup | JP Tech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --line-color: rgba(255, 255, 255, 0.4); }
-        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
+        :root { --pitch-line: rgba(255, 255, 255, 0.6); }
+        body { background: #010409; color: white; font-family: 'Inter', sans-serif; }
 
+        /* THE ELITE PITCH */
         .fifa-pitch {
-            background: #1b4332;
+            background: #133a1b;
+            /* Professional Mowed Grass Effect */
             background-image: 
-                repeating-linear-gradient(0deg, #2d6a4f 0%, #2d6a4f 10%, #1b4332 10%, #1b4332 20%),
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%);
-            border: 4px solid var(--line-color);
+                repeating-linear-gradient(0deg, #1a4721 0, #1a4721 10%, #133a1b 10%, #133a1b 20%),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
+            border: 3px solid var(--pitch-line);
             position: relative;
             width: 100%;
-            max-width: 480px;
-            aspect-ratio: 3 / 4; 
+            max-width: 500px;
+            aspect-ratio: 3 / 4.2; 
             margin: 0 auto;
-            border-radius: 8px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            overflow: hidden;
         }
 
-        .jersey-pattern {
-            width: 44px; height: 44px;
-            clip-path: path("M20.38 3.46L16 2H8L3.62 3.46a2 2 0 0 0-1.34 1.76V8c0 .42.26.8.65.95l3.69 1.43v10c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2V10.38l3.69-1.43c.39-.15.65-.53.65-.95V5.22a2 2 0 0 0-1.34-1.76z");
-            position: relative;
-            transition: transform 0.2s ease;
+        /* BROADCAST OVERLAY ELEMENTS */
+        .line { position: absolute; border: 2px solid var(--pitch-line); pointer-events: none; }
+        .box-large { width: 56%; height: 16%; left: 22%; border-top: 0; }
+        .box-small { width: 28%; height: 6%; left: 36%; border-top: 0; }
+        .bottom { bottom: 0; border-top: 2px solid var(--pitch-line); border-bottom: 0; }
+        
+        /* The Penalty "D" Arc */
+        .penalty-arc {
+            width: 80px; height: 40px; border: 2px solid var(--pitch-line);
+            position: absolute; left: 50%; transform: translateX(-50%);
+            border-radius: 0 0 50% 50%; border-top: 0;
         }
+        .arc-top { top: 16%; }
+        .arc-bottom { bottom: 16%; transform: translateX(-50%) rotate(180deg); }
 
-        .line { position: absolute; border: 2px solid var(--line-color); pointer-events: none; }
-        .box-large { width: 50%; height: 14%; left: 25%; border-top: 0; }
-        .box-small { width: 24%; height: 5%; left: 38%; border-top: 0; }
-        .bottom { bottom: 0; border-top: 2px solid var(--line-color); border-bottom: 0; }
         .center-circle {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 70px; height: 70px; border: 2px solid var(--line-color); border-radius: 50%;
+            width: 90px; height: 90px; border: 2px solid var(--pitch-line); border-radius: 50%;
         }
-        
-        /* Custom Scrollbar */
-        .custom-scroll::-webkit-scrollbar { width: 4px; }
-        .custom-scroll::-webkit-scrollbar-track { background: transparent; }
-        .custom-scroll::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+
+        /* Corner Arcs */
+        .corner { width: 20px; height: 20px; border: 2px solid var(--pitch-line); border-radius: 50%; position: absolute; }
+        .c-tl { top: -10px; left: -10px; } .c-tr { top: -10px; right: -10px; }
+        .c-bl { bottom: -10px; left: -10px; } .c-br { bottom: -10px; right: -10px; }
+
+        /* JERSEY & TEXT STYLE */
+        .jersey-pattern {
+            width: 46px; height: 46px;
+            clip-path: path("M20.38 3.46L16 2H8L3.62 3.46a2 2 0 0 0-1.34 1.76V8c0 .42.26.8.65.95l3.69 1.43v10c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2V10.38l3.69-1.43c.39-.15.65-.53.65-.95V5.22a2 2 0 0 0-1.34-1.76z");
+            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
+        }
+
+        .player-label {
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            min-width: 85px;
+        }
     </style>
 </head>
-<body class="p-4 md:p-10">
+<body class="p-4 md:p-8 bg-slate-950">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row gap-6 mb-8 bg-slate-900/60 p-6 rounded-[2rem] border border-white/5 items-center shadow-xl">
+        <div class="flex flex-col md:flex-row gap-4 mb-8 bg-slate-900 border border-white/10 p-5 rounded-2xl items-center shadow-2xl">
             <div class="flex items-center gap-4 flex-1">
-                <div onclick="document.getElementById('logoInput').click()" class="cursor-pointer group">
-                    <div id="logoPreview" class="w-16 h-16 bg-black/40 rounded-2xl border border-white/10 flex items-center justify-center overflow-hidden group-hover:border-green-500 transition">
-                        <i data-lucide="aperture" class="w-6 h-6 text-slate-600"></i>
+                <div onclick="document.getElementById('logoInput').click()" class="cursor-pointer">
+                    <div id="logoPreview" class="w-14 h-14 bg-black rounded-lg border border-white/5 flex items-center justify-center p-2">
+                        <i data-lucide="shield" class="text-slate-700"></i>
                     </div>
                     <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="handleLogo(this)">
                 </div>
                 <div>
-                    <input type="text" id="matchTitle" value="MATCHDAY LINEUP" class="bg-transparent font-black italic text-2xl uppercase outline-none text-green-500 w-full">
-                    <p class="text-[9px] font-bold text-slate-500 tracking-widest uppercase">JP Tech Solutions | PWE Sport</p>
+                    <input type="text" id="matchTitle" value="OFFICIAL LINEUP" class="bg-transparent font-black text-xl uppercase outline-none text-white w-full">
+                    <p class="text-[10px] text-green-500 font-bold tracking-widest">JP TECH SOLUTIONS • ANALYTICS</p>
                 </div>
             </div>
 
-            <div class="flex gap-4 items-center">
-                <div class="flex flex-col items-center">
-                    <label class="text-[8px] font-black text-slate-500 mb-1">GK</label>
-                    <input type="color" id="gkColor" value="#fbbf24" oninput="updatePitch()" class="w-8 h-8 bg-transparent border-none cursor-pointer">
+            <div class="flex gap-4">
+                <div class="flex gap-2 bg-black/40 p-2 rounded-xl border border-white/5">
+                    <input type="color" id="gkColor" value="#eab308" oninput="updatePitch()" class="w-6 h-6 bg-transparent border-none cursor-pointer rounded-full">
+                    <input type="color" id="kitColor" value="#ffffff" oninput="updatePitch()" class="w-6 h-6 bg-transparent border-none cursor-pointer">
                 </div>
-                <div class="flex flex-col items-center">
-                    <label class="text-[8px] font-black text-slate-500 mb-1">TEAM</label>
-                    <input type="color" id="kitColor" value="#ffffff" oninput="updatePitch()" class="w-8 h-8 bg-transparent border-none cursor-pointer">
-                </div>
-                <button onclick="downloadLineup()" class="bg-green-600 text-black px-6 py-3 rounded-xl font-black text-xs flex items-center gap-2 hover:bg-green-400 transition ml-2 shadow-lg shadow-green-900/20">
-                    <i data-lucide="camera" class="w-4 h-4"></i> EXPORT
+                <button onclick="downloadLineup()" class="bg-white text-black px-5 py-2 rounded-lg font-black text-xs hover:bg-green-400 transition flex items-center gap-2">
+                    <i data-lucide="download" class="w-4 h-4"></i> EXPORT
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
             <div class="lg:col-span-4 space-y-4">
-                <div class="bg-slate-900/40 p-6 rounded-3xl border border-white/5">
-                    <h2 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-tighter">Add Player</h2>
+                <div class="bg-slate-900 p-6 rounded-2xl border border-white/10">
+                    <select id="formationSelect" onchange="updatePitch()" class="w-full bg-black text-xs font-bold p-3 rounded-lg border border-white/10 outline-none mb-4">
+                        <option value="4-3-3">Formation: 4-3-3</option>
+                        <option value="4-4-2">Formation: 4-4-2</option>
+                        <option value="3-5-2">Formation: 3-5-2</option>
+                    </select>
                     <div class="flex gap-2">
-                        <input type="text" id="playerName" placeholder="Enter name..." class="flex-1 bg-black/40 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-green-500 transition">
-                        <button onclick="addPlayer()" class="bg-white text-black p-3 rounded-xl hover:bg-green-500 transition"><i data-lucide="plus"></i></button>
+                        <input type="text" id="playerName" placeholder="Player Name" class="flex-1 bg-black border border-white/10 rounded-lg p-3 text-sm outline-none">
+                        <button onclick="addPlayer()" class="bg-slate-800 p-3 rounded-lg hover:bg-green-600 transition"><i data-lucide="plus"></i></button>
                     </div>
                 </div>
-
-                <div class="bg-slate-900/40 p-6 rounded-3xl border border-white/5">
-                    <h2 class="text-[10px] font-black uppercase text-slate-500 mb-4 tracking-tighter">Formation</h2>
-                    <select id="formationSelect" onchange="updatePitch()" class="w-full bg-black/40 text-xs font-bold p-3 rounded-xl outline-none border border-white/10">
-                        <option value="4-4-2">4-4-2 Classic</option>
-                        <option value="4-3-3">4-3-3 Attack</option>
-                        <option value="3-5-2">3-5-2 Midfield</option>
-                        <option value="5-4-1">5-4-1 Park the Bus</option>
-                    </select>
-                </div>
-
-                <div id="rosterList" class="space-y-2 max-h-[300px] overflow-y-auto custom-scroll pr-2"></div>
+                <div id="rosterList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scroll"></div>
             </div>
 
             <div class="lg:col-span-8">
-                <div id="captureZone" class="p-2 inline-block w-full text-center">
-                    <div class="fifa-pitch" id="pitch">
-                        <div class="line box-large top-0"></div>
-                        <div class="line box-small top-0"></div>
-                        <div class="line box-large bottom"></div>
-                        <div class="line box-small bottom"></div>
-                        <div class="center-circle"></div>
-                        <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10"></div>
-                        <div id="playerContainer"></div>
-                    </div>
+                <div id="pitch" class="fifa-pitch">
+                    <div class="line box-large top-0"></div>
+                    <div class="line box-small top-0"></div>
+                    <div class="penalty-arc arc-top"></div>
+                    
+                    <div class="line box-large bottom"></div>
+                    <div class="line box-small bottom"></div>
+                    <div class="penalty-arc arc-bottom"></div>
+                    
+                    <div class="center-circle"></div>
+                    <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-white/20"></div>
+
+                    <div class="corner c-tl"></div><div class="corner c-tr"></div>
+                    <div class="corner c-bl"></div><div class="corner c-br"></div>
+
+                    <div id="playerContainer"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm p-4">
-        <div class="bg-slate-900 border border-white/10 w-full max-w-xs rounded-[2.5rem] p-8 shadow-2xl">
-            <h3 class="font-black mb-6 uppercase text-sm tracking-widest text-center">Assign Player</h3>
-            <select id="modalSelect" class="w-full bg-black/50 p-4 rounded-xl mb-4 border border-white/10 text-sm outline-none"></select>
-            <input type="number" id="modalNumber" value="10" class="w-full bg-black/50 p-4 rounded-xl mb-6 border border-white/10 text-sm text-center font-bold">
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+        <div class="bg-slate-900 border border-white/20 w-full max-w-xs rounded-3xl p-8">
+            <h3 class="font-black mb-6 uppercase text-sm text-center tracking-widest">Select Player</h3>
+            <select id="modalSelect" class="w-full bg-black p-4 rounded-xl mb-4 border border-white/10"></select>
+            <input type="number" id="modalNumber" value="10" class="w-full bg-black p-4 rounded-xl mb-6 border border-white/10 text-center font-bold">
             <div class="flex gap-2">
-                <button onclick="closeModal()" class="flex-1 text-xs font-bold text-slate-500">BACK</button>
-                <button onclick="confirmPlayer()" class="flex-1 bg-green-600 py-4 rounded-xl text-xs font-black text-black uppercase">Assign</button>
+                <button onclick="closeModal()" class="flex-1 text-xs text-slate-500 font-bold uppercase">Cancel</button>
+                <button onclick="confirmPlayer()" class="flex-1 bg-green-500 py-4 rounded-xl text-xs font-black text-black">CONFIRM</button>
             </div>
         </div>
     </div>
 
     <script>
         const tactics = {
-            "4-4-2": [{t:92, l:50}, {t:78, l:15}, {t:78, l:38}, {t:78, l:62}, {t:78, l:85}, {t:50, l:15}, {t:50, l:38}, {t:50, l:62}, {t:50, l:85}, {t:20, l:35}, {t:20, l:65}],
             "4-3-3": [{t:92, l:50}, {t:78, l:15}, {t:78, l:38}, {t:78, l:62}, {t:78, l:85}, {t:55, l:25}, {t:58, l:50}, {t:55, l:75}, {t:18, l:15}, {t:12, l:50}, {t:18, l:85}],
-            "3-5-2": [{t:92, l:50}, {t:78, l:25}, {t:78, l:50}, {t:78, l:75}, {t:50, l:10}, {t:52, l:30}, {t:55, l:50}, {t:52, l:70}, {t:50, l:90}, {t:18, l:35}, {t:18, l:65}],
-            "5-4-1": [{t:92, l:50}, {t:78, l:10}, {t:80, l:30}, {t:80, l:50}, {t:80, l:70}, {t:78, l:90}, {t:48, l:20}, {t:48, l:40}, {t:48, l:60}, {t:48, l:80}, {t:18, l:50}]
+            "4-4-2": [{t:92, l:50}, {t:78, l:15}, {t:78, l:38}, {t:78, l:62}, {t:78, l:85}, {t:50, l:15}, {t:50, l:38}, {t:50, l:62}, {t:50, l:85}, {t:22, l:35}, {t:22, l:65}],
+            "3-5-2": [{t:92, l:50}, {t:78, l:25}, {t:78, l:50}, {t:78, l:75}, {t:50, l:10}, {t:52, l:30}, {t:55, l:50}, {t:52, l:70}, {t:50, l:90}, {t:20, l:35}, {t:20, l:65}]
         };
 
-        let roster = JSON.parse(localStorage.getItem('jp_v1_roster')) || ["Player 1", "Player 2", "Player 3"];
+        let roster = JSON.parse(localStorage.getItem('jp_pro_roster')) || ["Courtois", "Vini Jr", "Mbappé"];
         let assignments = {};
         let currentSpot = null;
-        let savedLogo = localStorage.getItem('jp_v1_logo') || null;
+        let logo = localStorage.getItem('jp_pro_logo');
 
         function init() {
-            if(savedLogo) document.getElementById('logoPreview').innerHTML = `<img src="${savedLogo}" class="w-full h-full object-contain p-2">`;
+            if(logo) document.getElementById('logoPreview').innerHTML = `<img src="${logo}" class="w-full h-full object-contain">`;
             renderRoster();
             updatePitch();
             lucide.createIcons();
@@ -154,34 +170,34 @@
         function handleLogo(input) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                savedLogo = e.target.result;
-                document.getElementById('logoPreview').innerHTML = `<img src="${savedLogo}" class="w-full h-full object-contain p-2">`;
-                localStorage.setItem('jp_v1_logo', savedLogo);
+                logo = e.target.result;
+                document.getElementById('logoPreview').innerHTML = `<img src="${logo}" class="w-full h-full object-contain">`;
+                localStorage.setItem('jp_pro_logo', logo);
             };
             reader.readAsDataURL(input.files[0]);
         }
 
         function updatePitch() {
-            const formKey = document.getElementById('formationSelect').value;
-            const primary = document.getElementById('kitColor').value;
-            const gkColor = document.getElementById('gkColor').value;
+            const f = document.getElementById('formationSelect').value;
+            const gkC = document.getElementById('gkColor').value;
+            const kitC = document.getElementById('kitColor').value;
             const container = document.getElementById('playerContainer');
             container.innerHTML = '';
 
-            tactics[formKey].forEach((pos, i) => {
-                const isGK = (i === 0);
+            tactics[f].forEach((pos, i) => {
+                const isGK = i === 0;
                 const data = assignments[i] || { name: isGK ? "GK" : "Assign", num: isGK ? 1 : i+1 };
                 const node = document.createElement('div');
-                node.className = "player-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-20 cursor-pointer z-10";
+                node.className = "player-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-24 cursor-pointer z-10";
                 node.style.top = pos.t + "%";
                 node.style.left = pos.l + "%";
                 node.onclick = () => openModal(i);
 
                 node.innerHTML = `
-                    <div class="jersey-pattern shadow-lg" style="background-color: ${isGK ? gkColor : primary}">
-                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-black mt-2">${data.num}</span>
+                    <div class="jersey-pattern" style="background: ${isGK ? gkC : kitC}">
+                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-black mt-2">${data.num}</span>
                     </div>
-                    <div class="mt-1 bg-black/80 px-2 py-0.5 rounded border border-white/5 text-[8px] font-black uppercase text-center w-full truncate">
+                    <div class="player-label mt-2 px-2 py-1 rounded text-[9px] font-black uppercase text-center truncate">
                         ${data.name}
                     </div>
                 `;
@@ -190,68 +206,36 @@
         }
 
         async function downloadLineup() {
-            const el = document.getElementById('pitch');
-            const btn = event.currentTarget;
-            btn.innerHTML = "Processing...";
-            
-            try {
-                const canvas = await html2canvas(el, {
-                    backgroundColor: '#1b4332',
-                    scale: 3, // Higher quality
-                    useCORS: true,
-                    logging: false,
-                    allowTaint: true
-                });
-                
-                const link = document.createElement('a');
-                link.download = `JP_Tech_Lineup_${Date.now()}.png`;
-                link.href = canvas.toDataURL("image/png");
-                link.click();
-            } catch (err) {
-                console.error("Export failed", err);
-                alert("Could not export image. Please check permissions.");
-            } finally {
-                btn.innerHTML = `<i data-lucide="camera" class="w-4 h-4"></i> EXPORT`;
-                lucide.createIcons();
-            }
+            const canvas = await html2canvas(document.getElementById('pitch'), { scale: 3, useCORS: true });
+            const link = document.createElement('a');
+            link.download = 'Lineup_Pro.png';
+            link.href = canvas.toDataURL();
+            link.click();
         }
 
-        function openModal(idx) {
-            currentSpot = idx;
-            document.getElementById('modalSelect').innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
-            document.getElementById('modal').classList.remove('hidden');
+        function openModal(i) { currentSpot = i; document.getElementById('modal').classList.remove('hidden'); 
+            const s = document.getElementById('modalSelect');
+            s.innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
         }
-
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         function confirmPlayer() {
-            assignments[currentSpot] = { 
-                name: document.getElementById('modalSelect').value, 
-                num: document.getElementById('modalNumber').value 
-            };
-            updatePitch();
-            closeModal();
+            assignments[currentSpot] = { name: document.getElementById('modalSelect').value, num: document.getElementById('modalNumber').value };
+            updatePitch(); closeModal();
         }
-
-        function addPlayer() {
-            const name = document.getElementById('playerName').value;
-            if(!name) return;
-            roster.push(name);
-            document.getElementById('playerName').value = '';
-            renderRoster();
+        function addPlayer() { 
+            const n = document.getElementById('playerName').value; if(!n) return;
+            roster.push(n); document.getElementById('playerName').value = ''; renderRoster(); 
         }
-
         function renderRoster() {
             document.getElementById('rosterList').innerHTML = roster.map((p, i) => `
-                <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center group border border-white/5">
-                    <span class="text-xs font-medium text-slate-400">${p}</span>
-                    <button onclick="removePlayer(${i})" class="text-slate-700 hover:text-red-500 transition"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
+                    <span class="text-xs font-bold text-slate-400">${p}</span>
+                    <button onclick="roster.splice(${i},1); renderRoster();" class="text-slate-600 hover:text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                 </div>
             `).join('');
             lucide.createIcons();
-            localStorage.setItem('jp_v1_roster', JSON.stringify(roster));
+            localStorage.setItem('jp_pro_roster', JSON.stringify(roster));
         }
-
-        function removePlayer(idx) { roster.splice(idx, 1); renderRoster(); }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         init();
     </script>
