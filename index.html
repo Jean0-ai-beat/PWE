@@ -3,308 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Precision Lineup | JP Tech</title>
+    <title>Mobile Pro Lineup | JP Tech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --line-color: rgba(255, 255, 255, 0.5); }
-        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow: hidden; touch-action: none; }
+        :root { --line-color: rgba(255, 255, 255, 0.4); }
+        
+        /* Disable system gestures that interfere with dragging */
+        body { 
+            background: #020617; 
+            color: white; 
+            font-family: 'Inter', sans-serif; 
+            overflow-x: hidden;
+            touch-action: none; 
+            -webkit-user-select: none;
+            user-select: none;
+        }
 
         .fifa-pitch {
             background: #14361a;
             background-image: 
-                repeating-linear-gradient(0deg, #1a4221 0, #1a4221 10%, #14361a 10%, #14361a 20%),
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%);
-            border: 3px solid var(--line-color);
+                repeating-linear-gradient(0deg, #1a4221 0, #1a4221 10%, #14361a 10%, #14361a 20%);
+            border: 2px solid var(--line-color);
             position: relative;
             width: 100%;
-            max-width: 460px;
+            max-width: 420px;
             aspect-ratio: 3 / 4.2; 
             margin: 0 auto;
             border-radius: 8px;
-            box-shadow: 0 40px 80px -15px rgba(0,0,0,0.8);
             overflow: hidden;
+            /* Ensures pitch doesn't move when touched */
+            touch-action: none;
         }
 
-        /* CIRCULAR PLAYER ICON */
+        /* MOBILE OPTIMIZED PLAYER NODE */
         .player-node {
             position: absolute;
             transform: translate(-50%, -50%);
             z-index: 20;
-            cursor: grab;
-            user-select: none;
-            touch-action: none; /* Critical for Pointer Events */
+            /* Larger invisible hit-area for fingers (80px x 100px) */
+            width: 80px;
+            height: 100px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            width: 80px;
-            transition: scale 0.2s ease, filter 0.2s ease;
+            justify-content: center;
+            touch-action: none; 
+            cursor: grab;
         }
 
         .player-circle {
-            width: 54px;
-            height: 54px;
+            width: 52px;
+            height: 52px;
             border-radius: 50%;
-            border: 3px solid var(--kit-color);
-            background-color: #000;
-            background-size: cover;
-            background-position: center;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
+            border: 3px solid var(--kit-color, #fff);
+            background: #000 url('https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Jean-Jacques-Dessalines.jpg/220px-Jean-Jacques-Dessalines.jpg') center/cover no-repeat;
+            box-shadow: 0 8px 15px rgba(0,0,0,0.5);
+            pointer-events: none; /* Let parent node handle the touch */
         }
-
-        .player-number {
-            position: absolute;
-            bottom: -5px;
-            right: -5px;
-            background: var(--kit-color);
-            color: black;
-            font-size: 10px;
-            font-weight: 900;
-            padding: 2px 5px;
-            border-radius: 4px;
-            border: 2px solid #000;
-        }
-
-        .player-node:active { scale: 1.15; cursor: grabbing; z-index: 100; filter: brightness(1.2); }
 
         .player-label {
-            margin-top: 8px;
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(8px);
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 9px;
+            margin-top: 6px;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 10px;
             font-weight: 800;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
             border: 1px solid rgba(255,255,255,0.1);
-            white-space: nowrap;
-            max-width: 90px;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            pointer-events: none;
         }
 
-        /* Pitch Markings */
-        .line { position: absolute; border: 2px solid var(--line-color); pointer-events: none; }
+        /* Pitch Elements */
+        .line { position: absolute; border: 1px solid var(--line-color); pointer-events: none; }
         .box-large { width: 56%; height: 16%; left: 22%; border-top: 0; }
-        .box-small { width: 28%; height: 6%; left: 36%; border-top: 0; }
         .center-circle {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 90px; height: 90px; border: 2px solid var(--line-color); border-radius: 50%;
+            width: 80px; height: 80px; border: 1px solid var(--line-color); border-radius: 50%;
+        }
+
+        /* Scrollable roster for mobile */
+        .scroll-container {
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
     </style>
 </head>
-<body class="p-4 lg:p-10">
+<body class="p-4">
 
-    <div class="max-w-6xl mx-auto h-full flex flex-col">
-        <div class="flex flex-col md:flex-row gap-4 mb-6 bg-slate-900/90 p-5 rounded-3xl border border-white/5 items-center">
-            <div class="flex items-center gap-4 flex-1">
-                <div class="w-12 h-12 bg-green-600 rounded-2xl flex items-center justify-center">
-                    <i data-lucide="layout-template" class="text-black"></i>
-                </div>
-                <div>
-                    <input type="text" id="matchTitle" value="OFFICIAL MATCHDAY" class="bg-transparent font-black text-xl uppercase outline-none text-white w-full">
-                    <p class="text-[9px] font-bold text-slate-500 tracking-widest uppercase">JP Tech Solutions • Tactical Engine</p>
-                </div>
+    <div class="max-w-md mx-auto space-y-4 h-full flex flex-col">
+        <div class="bg-slate-900 p-4 rounded-2xl flex justify-between items-center border border-white/5 shadow-xl">
+            <div>
+                <h1 class="text-lg font-black tracking-tighter">LINEUP PRO</h1>
+                <p class="text-[8px] text-green-500 font-bold uppercase tracking-widest">JP Tech Solutions</p>
             </div>
-
-            <div class="flex gap-4">
-                <input type="color" id="kitColor" value="#ffffff" oninput="refreshKitColor()" class="w-10 h-10 bg-transparent border-none cursor-pointer">
-                <button onclick="downloadLineup()" class="bg-white text-black px-6 py-3 rounded-2xl font-black text-xs uppercase flex items-center gap-2 hover:bg-green-400 transition">
-                    <i data-lucide="download" class="w-4 h-4"></i> Export
-                </button>
+            <div class="flex gap-2">
+                <input type="color" id="kitColor" value="#ffffff" oninput="updateKitColor()" class="w-8 h-8 bg-transparent border-none">
+                <button onclick="downloadLineup()" class="bg-green-600 p-2 rounded-lg"><i data-lucide="camera" class="w-5 h-5 text-black"></i></button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start flex-1 overflow-hidden">
-            <div class="lg:col-span-4 space-y-4 overflow-y-auto max-h-full pb-10">
-                <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5">
-                    <select id="formationSelect" onchange="applyFormation()" class="w-full bg-black p-3 rounded-xl border border-white/10 text-xs font-bold mb-4 outline-none">
-                        <option value="4-3-3">FORMATION: 4-3-3</option>
-                        <option value="4-4-2">FORMATION: 4-4-2</option>
-                        <option value="3-5-2">FORMATION: 3-5-2</option>
-                    </select>
-                    <div class="flex gap-2">
-                        <input type="text" id="playerName" placeholder="Player Name" class="flex-1 bg-black border border-white/10 rounded-xl p-3 text-sm outline-none">
-                        <button onclick="addPlayer()" class="bg-slate-800 p-3 rounded-xl hover:bg-green-500 transition"><i data-lucide="plus"></i></button>
-                    </div>
-                </div>
-                <div id="rosterList" class="space-y-2"></div>
-            </div>
-
-            <div class="lg:col-span-8 relative">
-                <div id="pitch" class="fifa-pitch">
-                    <div class="line box-large top-0"></div><div class="line box-small top-0"></div>
-                    <div class="line box-large bottom-0 absolute bottom-0 w-[56%] left-[22%] border-b-0 h-[16%]"></div>
-                    <div class="line box-small bottom-0 absolute bottom-0 w-[28%] left-[36%] border-b-0 h-[6%]"></div>
-                    <div class="center-circle"></div>
-                    <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-white/20"></div>
-                    <div id="playerContainer"></div>
-                </div>
-            </div>
+        <div class="grid grid-cols-2 gap-2 touch-action-pan-y">
+            <select id="formationSelect" onchange="initPitch()" class="bg-slate-800 text-[10px] font-bold p-3 rounded-xl border-none outline-none uppercase">
+                <option value="4-3-3">4-3-3 Attack</option>
+                <option value="4-4-2">4-4-2 Classic</option>
+                <option value="3-5-2">3-5-2 Wing</option>
+            </select>
+            <button onclick="document.getElementById('rosterModal').classList.remove('hidden')" class="bg-slate-800 text-[10px] font-bold rounded-xl uppercase">Manage Roster</button>
         </div>
+
+        <div id="pitch" class="fifa-pitch shadow-2xl">
+            <div class="line box-large top-0"></div>
+            <div class="line box-large bottom-0 absolute bottom-0 border-b-0"></div>
+            <div class="center-circle"></div>
+            <div class="absolute top-1/2 left-0 right-0 h-[1px] bg-white/10"></div>
+            
+            <div id="playerContainer"></div>
+        </div>
+
+        <p class="text-[9px] text-slate-500 text-center italic">Drag players to adjust. Tap player to swap name.</p>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="bg-slate-900 border border-white/10 w-full max-w-xs rounded-3xl p-8">
-            <h3 class="font-black mb-6 uppercase text-sm text-center">Assign Player</h3>
-            <select id="modalSelect" class="w-full bg-black p-4 rounded-xl mb-4 border border-white/10 text-sm"></select>
-            <input type="number" id="modalNumber" value="10" class="w-full bg-black p-4 rounded-xl mb-6 border border-white/10 text-center font-bold">
-            <div class="flex gap-2">
-                <button onclick="closeModal()" class="flex-1 text-[10px] font-black text-slate-500 uppercase">Cancel</button>
-                <button onclick="confirmPlayer()" class="flex-1 bg-green-500 py-4 rounded-xl text-[10px] font-black text-black">CONFIRM</button>
-            </div>
+    <div id="rosterModal" class="hidden fixed inset-0 z-[100] bg-black p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-6">
+            <h2 class="font-black">TEAM ROSTER</h2>
+            <button onclick="document.getElementById('rosterModal').classList.add('hidden')" class="text-red-500 font-bold">CLOSE</button>
+        </div>
+        <div class="flex gap-2 mb-4">
+            <input type="text" id="newPlayer" placeholder="Name..." class="flex-1 bg-slate-900 border-none p-4 rounded-xl text-sm">
+            <button onclick="addPlayer()" class="bg-green-600 px-6 rounded-xl font-bold text-black">ADD</button>
+        </div>
+        <div id="rosterList" class="space-y-2 overflow-y-auto flex-1 scroll-container"></div>
+    </div>
+
+    <div id="assignModal" class="hidden fixed inset-0 z-[110] bg-black/90 flex items-center justify-center p-6">
+        <div class="bg-slate-900 w-full rounded-3xl p-8 border border-white/10">
+            <h3 class="text-center font-black mb-6 text-sm">SELECT PLAYER</h3>
+            <div id="modalRoster" class="grid grid-cols-2 gap-2 max-h-60 overflow-y-auto mb-6 scroll-container"></div>
+            <button onclick="document.getElementById('assignModal').classList.add('hidden')" class="w-full p-4 text-slate-500 font-bold text-xs">CANCEL</button>
         </div>
     </div>
 
     <script>
-        const DESSALINES_IMG = "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e0/Jean-Jacques-Dessalines.jpg/220px-Jean-Jacques-Dessalines.jpg";
-        
         const tactics = {
-            "4-3-3": [{t:90, l:50}, {t:75, l:15}, {t:75, l:38}, {t:75, l:62}, {t:75, l:85}, {t:52, l:25}, {t:55, l:50}, {t:52, l:75}, {t:18, l:15}, {t:12, l:50}, {t:18, l:85}],
-            "4-4-2": [{t:90, l:50}, {t:75, l:15}, {t:75, l:38}, {t:75, l:62}, {t:75, l:85}, {t:50, l:15}, {t:50, l:38}, {t:50, l:62}, {t:50, l:85}, {t:20, l:35}, {t:20, l:65}],
-            "3-5-2": [{t:90, l:50}, {t:75, l:25}, {t:75, l:50}, {t:75, l:75}, {t:50, l:10}, {t:50, l:30}, {t:52, l:50}, {t:50, l:70}, {t:50, l:90}, {t:20, l:35}, {t:20, l:65}]
+            "4-3-3": [{t:88, l:50}, {t:72, l:15}, {t:72, l:38}, {t:72, l:62}, {t:72, l:85}, {t:48, l:25}, {t:50, l:50}, {t:48, l:75}, {t:18, l:15}, {t:12, l:50}, {t:18, l:85}],
+            "4-4-2": [{t:88, l:50}, {t:72, l:15}, {t:72, l:38}, {t:72, l:62}, {t:72, l:85}, {t:45, l:15}, {t:45, l:38}, {t:45, l:62}, {t:45, l:85}, {t:18, l:35}, {t:18, l:65}],
+            "3-5-2": [{t:88, l:50}, {t:72, l:25}, {t:72, l:50}, {t:72, l:75}, {t:45, l:10}, {t:45, l:30}, {t:48, l:50}, {t:45, l:70}, {t:45, l:90}, {t:18, l:35}, {t:18, l:65}]
         };
 
-        let roster = JSON.parse(localStorage.getItem('jp_pro_roster_v3')) || ["Dessalines (C)", "Player 1", "Player 2"];
+        let roster = JSON.parse(localStorage.getItem('jp_mobile_roster')) || ["Dessalines", "Vini Jr", "Mbappé", "Courtois"];
         let assignments = {};
-        let currentIdx = null;
+        let activeSlot = null;
 
-        function init() {
-            renderRoster();
-            applyFormation();
-            lucide.createIcons();
-        }
-
-        function applyFormation() {
-            const f = document.getElementById('formationSelect').value;
+        function initPitch() {
+            const formation = document.getElementById('formationSelect').value;
             const container = document.getElementById('playerContainer');
             container.innerHTML = '';
-            
-            tactics[f].forEach((pos, i) => {
-                createPlayerNode(i, pos.t, pos.l);
+
+            tactics[formation].forEach((pos, i) => {
+                const node = document.createElement('div');
+                node.className = "player-node";
+                node.id = `slot-${i}`;
+                node.style.top = pos.t + "%";
+                node.style.left = pos.l + "%";
+
+                const name = assignments[i] || (i === 0 ? "GK" : "SWAP");
+                node.innerHTML = `
+                    <div class="player-circle"></div>
+                    <div class="player-label">${name}</div>
+                `;
+
+                // TOUCH & MOUSE ENGINE
+                node.onpointerdown = handleDrag;
+                node.onclick = (e) => { if(!node.isDragging) openAssignModal(i); };
+
+                container.appendChild(node);
             });
-            refreshKitColor();
+            updateKitColor();
         }
 
-        function createPlayerNode(id, top, left) {
-            const data = assignments[id] || { name: id === 0 ? "GK" : "TAP TO ASSIGN", num: id === 0 ? 1 : id + 1 };
-            const kitColor = document.getElementById('kitColor').value;
-            
-            const node = document.createElement('div');
-            node.className = "player-node";
-            node.id = `player-${id}`;
-            node.style.top = top + "%";
-            node.style.left = left + "%";
-            node.style.setProperty('--kit-color', kitColor);
-
-            node.innerHTML = `
-                <div class="player-circle" style="background-image: url('${DESSALINES_IMG}')">
-                    <div class="player-number">${data.num}</div>
-                </div>
-                <div class="player-label">${data.name}</div>
-            `;
-
-            // Pointer Event Engine
-            node.onpointerdown = startDragging;
-            node.onclick = (e) => { if(!node.dataset.dragged) openModal(id); };
-
-            document.getElementById('playerContainer').appendChild(node);
-        }
-
-        // PRECISION DRAG ENGINE
-        function startDragging(e) {
+        function handleDrag(e) {
             const node = e.currentTarget;
             node.setPointerCapture(e.pointerId);
-            node.dataset.dragged = ""; // Reset drag state
+            node.isDragging = false;
             
             const pitch = document.getElementById('pitch').getBoundingClientRect();
-            
-            const onPointerMove = (moveEvent) => {
-                node.dataset.dragged = "true";
-                let x = ((moveEvent.clientX - pitch.left) / pitch.width) * 100;
-                let y = ((moveEvent.clientY - pitch.top) / pitch.height) * 100;
 
-                // Keep inside pitch
-                x = Math.max(5, Math.min(95, x));
-                y = Math.max(5, Math.min(95, y));
+            const onMove = (moveEv) => {
+                node.isDragging = true;
+                let x = ((moveEv.clientX - pitch.left) / pitch.width) * 100;
+                let y = ((moveEv.clientY - pitch.top) / pitch.height) * 100;
 
-                node.style.left = x + "%";
-                node.style.top = y + "%";
+                // Constraints for Mobile view
+                node.style.left = Math.max(8, Math.min(92, x)) + "%";
+                node.style.top = Math.max(8, Math.min(92, y)) + "%";
             };
 
-            const onPointerUp = () => {
+            const onUp = () => {
                 node.releasePointerCapture(e.pointerId);
-                node.removeEventListener('pointermove', onPointerMove);
-                node.removeEventListener('pointerup', onPointerUp);
-                setTimeout(() => delete node.dataset.dragged, 100);
+                node.removeEventListener('pointermove', onMove);
+                node.removeEventListener('pointerup', onUp);
+                // Tiny delay to distinguish between drag and tap
+                setTimeout(() => { if(node.isDragging) node.isDragging = false; }, 100);
             };
 
-            node.addEventListener('pointermove', onPointerMove);
-            node.addEventListener('pointerup', onPointerUp);
+            node.addEventListener('pointermove', onMove);
+            node.addEventListener('pointerup', onUp);
         }
 
-        function refreshKitColor() {
-            const color = document.getElementById('kitColor').value;
-            document.querySelectorAll('.player-node').forEach(n => {
-                n.style.setProperty('--kit-color', color);
-            });
+        function openAssignModal(slot) {
+            activeSlot = slot;
+            const modalRoster = document.getElementById('modalRoster');
+            modalRoster.innerHTML = roster.map(name => `
+                <button onclick="selectPlayer('${name}')" class="bg-slate-800 p-4 rounded-xl text-[10px] font-bold truncate">${name}</button>
+            `).join('');
+            document.getElementById('assignModal').classList.remove('hidden');
         }
 
-        function openModal(id) {
-            currentIdx = id;
-            const s = document.getElementById('modalSelect');
-            s.innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
-            document.getElementById('modal').classList.remove('hidden');
-        }
-
-        function confirmPlayer() {
-            assignments[currentIdx] = { 
-                name: document.getElementById('modalSelect').value, 
-                num: document.getElementById('modalNumber').value 
-            };
-            const node = document.getElementById(`player-${currentIdx}`);
-            node.querySelector('.player-label').innerText = assignments[currentIdx].name;
-            node.querySelector('.player-number').innerText = assignments[currentIdx].num;
-            closeModal();
+        function selectPlayer(name) {
+            assignments[activeSlot] = name;
+            document.getElementById(`slot-${activeSlot}`).querySelector('.player-label').innerText = name;
+            document.getElementById('assignModal').classList.add('hidden');
         }
 
         function addPlayer() {
-            const n = document.getElementById('playerName').value;
-            if(!n) return;
-            roster.push(n);
-            document.getElementById('playerName').value = '';
-            renderRoster();
+            const input = document.getElementById('newPlayer');
+            if(input.value) {
+                roster.push(input.value);
+                input.value = '';
+                renderRosterList();
+            }
         }
 
-        function renderRoster() {
+        function renderRosterList() {
             const list = document.getElementById('rosterList');
             list.innerHTML = roster.map((p, i) => `
-                <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
-                    <span class="text-xs font-bold text-slate-400">${p}</span>
-                    <button onclick="roster.splice(${i},1); renderRoster();" class="text-slate-700 hover:text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                <div class="bg-slate-900 p-4 rounded-xl flex justify-between items-center">
+                    <span class="text-sm">${p}</span>
+                    <button onclick="roster.splice(${i},1); renderRosterList();" class="text-red-500 text-xs font-bold">REMOVE</button>
                 </div>
             `).join('');
-            lucide.createIcons();
-            localStorage.setItem('jp_pro_roster_v3', JSON.stringify(roster));
+            localStorage.setItem('jp_mobile_roster', JSON.stringify(roster));
         }
 
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+        function updateKitColor() {
+            const color = document.getElementById('kitColor').value;
+            document.documentElement.style.setProperty('--kit-color', color);
+        }
 
         async function downloadLineup() {
-            const canvas = await html2canvas(document.getElementById('pitch'), { scale: 3, useCORS: true });
+            const canvas = await html2canvas(document.getElementById('pitch'), { scale: 2 });
             const link = document.createElement('a');
-            link.download = 'Elite_Lineup_JP.png';
+            link.download = 'JP_Lineup.png';
             link.href = canvas.toDataURL();
             link.click();
         }
 
-        init();
+        // Initialize
+        initPitch();
+        renderRosterList();
+        lucide.createIcons();
     </script>
 </body>
 </html>
