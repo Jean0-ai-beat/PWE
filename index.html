@@ -3,21 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Lineup | JP Tech</title>
+    <title>Tactical Elite | JP Tech</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --pitch-line: rgba(255, 255, 255, 0.6); }
-        body { background: #010409; color: white; font-family: 'Inter', sans-serif; }
+        :root { --pitch-line: rgba(255, 255, 255, 0.5); }
+        body { background: #020617; color: white; font-family: 'Inter', sans-serif; overflow-x: hidden; }
 
         /* THE ELITE PITCH */
         .fifa-pitch {
-            background: #133a1b;
-            /* Professional Mowed Grass Effect */
+            background: #14361a;
             background-image: 
-                repeating-linear-gradient(0deg, #1a4721 0, #1a4721 10%, #133a1b 10%, #133a1b 20%),
-                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.08) 0%, transparent 70%);
+                repeating-linear-gradient(0deg, #1a4221 0, #1a4221 10%, #14361a 10%, #14361a 20%),
+                radial-gradient(circle at 50% 50%, rgba(255,255,255,0.05) 0%, transparent 80%);
             border: 3px solid var(--pitch-line);
             position: relative;
             width: 100%;
@@ -25,125 +24,124 @@
             aspect-ratio: 3 / 4.2; 
             margin: 0 auto;
             border-radius: 4px;
-            box-shadow: 0 0 100px rgba(0,0,0,0.5);
+            box-shadow: 0 50px 100px -20px rgba(0,0,0,0.7);
             overflow: hidden;
+            touch-action: none; /* Prevents scrolling while dragging */
         }
 
-        /* BROADCAST OVERLAY ELEMENTS */
+        /* 3D JERSEY ENGINE */
+        .jersey-3d {
+            width: 48px; height: 48px;
+            clip-path: path("M24 4c-2 0-4 1-5 2-1-1-3-2-5-2-4 0-7 3-7 7 0 4 3 11 12 18 9-7 12-14 12-18 0-4-3-7-7-7z"); /* Simplified Kit Shape */
+            /* Advanced Gradient for Fabric Depth */
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%, rgba(0,0,0,0.3) 100%), var(--kit-color);
+            position: relative;
+            filter: drop-shadow(0 8px 6px rgba(0,0,0,0.4));
+            transition: transform 0.1s;
+        }
+
+        /* Jersey Sleeves/Body Detail */
+        .jersey-3d::after {
+            content: ''; position: absolute; inset: 0;
+            background: repeating-linear-gradient(90deg, transparent, transparent 10px, rgba(0,0,0,0.05) 10px, rgba(0,0,0,0.05) 11px);
+        }
+
+        /* DRAGGABLE NODE */
+        .player-node {
+            cursor: grab;
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            user-select: none;
+        }
+        .player-node:active { cursor: grabbing; scale: 1.1; z-index: 100; }
+
+        .player-label {
+            background: linear-gradient(to bottom, rgba(15, 23, 42, 0.95), rgba(0, 0, 0, 0.95));
+            border-bottom: 2px solid var(--kit-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            min-width: 90px;
+        }
+
+        /* Pitch Markings */
         .line { position: absolute; border: 2px solid var(--pitch-line); pointer-events: none; }
         .box-large { width: 56%; height: 16%; left: 22%; border-top: 0; }
         .box-small { width: 28%; height: 6%; left: 36%; border-top: 0; }
         .bottom { bottom: 0; border-top: 2px solid var(--pitch-line); border-bottom: 0; }
-        
-        /* The Penalty "D" Arc */
-        .penalty-arc {
-            width: 80px; height: 40px; border: 2px solid var(--pitch-line);
-            position: absolute; left: 50%; transform: translateX(-50%);
-            border-radius: 0 0 50% 50%; border-top: 0;
-        }
-        .arc-top { top: 16%; }
-        .arc-bottom { bottom: 16%; transform: translateX(-50%) rotate(180deg); }
-
         .center-circle {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 90px; height: 90px; border: 2px solid var(--pitch-line); border-radius: 50%;
         }
-
-        /* Corner Arcs */
-        .corner { width: 20px; height: 20px; border: 2px solid var(--pitch-line); border-radius: 50%; position: absolute; }
-        .c-tl { top: -10px; left: -10px; } .c-tr { top: -10px; right: -10px; }
-        .c-bl { bottom: -10px; left: -10px; } .c-br { bottom: -10px; right: -10px; }
-
-        /* JERSEY & TEXT STYLE */
-        .jersey-pattern {
-            width: 46px; height: 46px;
-            clip-path: path("M20.38 3.46L16 2H8L3.62 3.46a2 2 0 0 0-1.34 1.76V8c0 .42.26.8.65.95l3.69 1.43v10c0 1.1.9 2 2 2h7c1.1 0 2-.9 2-2V10.38l3.69-1.43c.39-.15.65-.53.65-.95V5.22a2 2 0 0 0-1.34-1.76z");
-            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
-        }
-
-        .player-label {
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            border: 1px solid rgba(255,255,255,0.1);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            min-width: 85px;
-        }
     </style>
 </head>
-<body class="p-4 md:p-8 bg-slate-950">
+<body class="p-4 lg:p-10 bg-slate-950">
 
     <div class="max-w-6xl mx-auto">
-        <div class="flex flex-col md:flex-row gap-4 mb-8 bg-slate-900 border border-white/10 p-5 rounded-2xl items-center shadow-2xl">
+        <div class="flex flex-col md:flex-row gap-6 mb-8 bg-slate-900/80 backdrop-blur-md p-6 rounded-[2rem] border border-white/5 items-center shadow-2xl">
             <div class="flex items-center gap-4 flex-1">
-                <div onclick="document.getElementById('logoInput').click()" class="cursor-pointer">
-                    <div id="logoPreview" class="w-14 h-14 bg-black rounded-lg border border-white/5 flex items-center justify-center p-2">
-                        <i data-lucide="shield" class="text-slate-700"></i>
+                <div onclick="document.getElementById('logoInput').click()" class="cursor-pointer group">
+                    <div id="logoPreview" class="w-14 h-14 bg-black rounded-2xl border border-white/10 flex items-center justify-center p-2 group-hover:border-green-500 transition">
+                        <i data-lucide="shield-half" class="text-slate-800"></i>
                     </div>
                     <input type="file" id="logoInput" class="hidden" accept="image/*" onchange="handleLogo(this)">
                 </div>
                 <div>
-                    <input type="text" id="matchTitle" value="OFFICIAL LINEUP" class="bg-transparent font-black text-xl uppercase outline-none text-white w-full">
-                    <p class="text-[10px] text-green-500 font-bold tracking-widest">JP TECH SOLUTIONS • ANALYTICS</p>
+                    <input type="text" id="matchTitle" value="EL CLÁSICO: LINEUPS" class="bg-transparent font-black italic text-2xl uppercase outline-none text-white w-full">
+                    <p class="text-[9px] font-bold text-green-500 tracking-[0.4em] uppercase">Tactical Engine | JP Tech</p>
                 </div>
             </div>
 
             <div class="flex gap-4">
-                <div class="flex gap-2 bg-black/40 p-2 rounded-xl border border-white/5">
-                    <input type="color" id="gkColor" value="#eab308" oninput="updatePitch()" class="w-6 h-6 bg-transparent border-none cursor-pointer rounded-full">
-                    <input type="color" id="kitColor" value="#ffffff" oninput="updatePitch()" class="w-6 h-6 bg-transparent border-none cursor-pointer">
+                <div class="flex gap-3 bg-black/40 p-2.5 rounded-2xl border border-white/10">
+                    <input type="color" id="gkColor" value="#fbbf24" oninput="updatePitch()" title="GK Color" class="w-6 h-6 bg-transparent border-none cursor-pointer">
+                    <input type="color" id="kitColor" value="#ffffff" oninput="updatePitch()" title="Team Color" class="w-6 h-6 bg-transparent border-none cursor-pointer">
                 </div>
-                <button onclick="downloadLineup()" class="bg-white text-black px-5 py-2 rounded-lg font-black text-xs hover:bg-green-400 transition flex items-center gap-2">
-                    <i data-lucide="download" class="w-4 h-4"></i> EXPORT
+                <button onclick="downloadLineup()" class="bg-green-600 text-black px-6 py-3 rounded-2xl font-black text-[10px] uppercase flex items-center gap-2 hover:bg-green-400 transition shadow-lg shadow-green-600/20">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Export PNG
                 </button>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
             <div class="lg:col-span-4 space-y-4">
-                <div class="bg-slate-900 p-6 rounded-2xl border border-white/10">
-                    <select id="formationSelect" onchange="updatePitch()" class="w-full bg-black text-xs font-bold p-3 rounded-lg border border-white/10 outline-none mb-4">
-                        <option value="4-3-3">Formation: 4-3-3</option>
-                        <option value="4-4-2">Formation: 4-4-2</option>
-                        <option value="3-5-2">Formation: 3-5-2</option>
+                <div class="bg-slate-900/50 p-6 rounded-3xl border border-white/5">
+                    <label class="text-[10px] font-black uppercase text-slate-500 block mb-3 tracking-widest">Base Formation</label>
+                    <select id="formationSelect" onchange="resetPositions()" class="w-full bg-black/50 text-xs font-bold p-3 rounded-xl border border-white/10 outline-none mb-6">
+                        <option value="4-3-3">4-3-3 (Attack)</option>
+                        <option value="4-4-2">4-4-2 (Balanced)</option>
+                        <option value="3-5-2">3-5-2 (Dominance)</option>
                     </select>
-                    <div class="flex gap-2">
-                        <input type="text" id="playerName" placeholder="Player Name" class="flex-1 bg-black border border-white/10 rounded-lg p-3 text-sm outline-none">
-                        <button onclick="addPlayer()" class="bg-slate-800 p-3 rounded-lg hover:bg-green-600 transition"><i data-lucide="plus"></i></button>
+                    
+                    <div class="flex gap-2 mb-4">
+                        <input type="text" id="playerName" placeholder="Player name..." class="flex-1 bg-black/50 border border-white/10 rounded-xl p-3 text-sm outline-none focus:border-green-500 transition">
+                        <button onclick="addPlayer()" class="bg-white text-black p-3 rounded-xl hover:bg-green-400 transition"><i data-lucide="plus"></i></button>
                     </div>
+                    <div id="rosterList" class="space-y-2 max-h-[300px] overflow-y-auto pr-2 custom-scroll"></div>
                 </div>
-                <div id="rosterList" class="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scroll"></div>
+                <p class="text-[9px] text-slate-600 font-medium text-center italic">Tip: Click players to assign, Drag to move them on the pitch.</p>
             </div>
 
             <div class="lg:col-span-8">
-                <div id="pitch" class="fifa-pitch">
-                    <div class="line box-large top-0"></div>
-                    <div class="line box-small top-0"></div>
-                    <div class="penalty-arc arc-top"></div>
-                    
-                    <div class="line box-large bottom"></div>
-                    <div class="line box-small bottom"></div>
-                    <div class="penalty-arc arc-bottom"></div>
-                    
+                <div id="pitch" class="fifa-pitch" ondrop="drop(event)" ondragover="allowDrop(event)">
+                    <div class="line box-large top-0"></div><div class="line box-small top-0"></div>
+                    <div class="line box-large bottom"></div><div class="line box-small bottom"></div>
                     <div class="center-circle"></div>
-                    <div class="absolute top-1/2 left-0 right-0 h-[2px] bg-white/20"></div>
-
-                    <div class="corner c-tl"></div><div class="corner c-tr"></div>
-                    <div class="corner c-bl"></div><div class="corner c-br"></div>
-
+                    <div class="absolute top-1/2 left-0 right-0 h-[1.5px] bg-white/10"></div>
+                    
                     <div id="playerContainer"></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
-        <div class="bg-slate-900 border border-white/20 w-full max-w-xs rounded-3xl p-8">
-            <h3 class="font-black mb-6 uppercase text-sm text-center tracking-widest">Select Player</h3>
-            <select id="modalSelect" class="w-full bg-black p-4 rounded-xl mb-4 border border-white/10"></select>
-            <input type="number" id="modalNumber" value="10" class="w-full bg-black p-4 rounded-xl mb-6 border border-white/10 text-center font-bold">
+    <div id="modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-md p-4">
+        <div class="bg-slate-900 border border-white/10 w-full max-w-xs rounded-[2.5rem] p-10">
+            <h3 class="font-black mb-6 uppercase text-sm tracking-widest text-green-500 text-center">Pick Player</h3>
+            <select id="modalSelect" class="w-full bg-black p-4 rounded-2xl mb-4 border border-white/10 text-sm outline-none"></select>
+            <input type="number" id="modalNumber" value="10" class="w-full bg-black p-4 rounded-2xl mb-6 border border-white/10 text-center font-bold">
             <div class="flex gap-2">
-                <button onclick="closeModal()" class="flex-1 text-xs text-slate-500 font-bold uppercase">Cancel</button>
-                <button onclick="confirmPlayer()" class="flex-1 bg-green-500 py-4 rounded-xl text-xs font-black text-black">CONFIRM</button>
+                <button onclick="closeModal()" class="flex-1 text-[10px] font-black text-slate-500 uppercase">Back</button>
+                <button onclick="confirmPlayer()" class="flex-1 bg-green-600 py-4 rounded-2xl text-[10px] font-black text-black uppercase">Confirm</button>
             </div>
         </div>
     </div>
@@ -155,29 +153,18 @@
             "3-5-2": [{t:92, l:50}, {t:78, l:25}, {t:78, l:50}, {t:78, l:75}, {t:50, l:10}, {t:52, l:30}, {t:55, l:50}, {t:52, l:70}, {t:50, l:90}, {t:20, l:35}, {t:20, l:65}]
         };
 
-        let roster = JSON.parse(localStorage.getItem('jp_pro_roster')) || ["Courtois", "Vini Jr", "Mbappé"];
+        let roster = JSON.parse(localStorage.getItem('jp_pro_roster')) || ["Vini Jr", "Mbappé", "Courtois"];
         let assignments = {};
         let currentSpot = null;
-        let logo = localStorage.getItem('jp_pro_logo');
+        let dragTarget = null;
 
         function init() {
-            if(logo) document.getElementById('logoPreview').innerHTML = `<img src="${logo}" class="w-full h-full object-contain">`;
             renderRoster();
-            updatePitch();
+            resetPositions();
             lucide.createIcons();
         }
 
-        function handleLogo(input) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                logo = e.target.result;
-                document.getElementById('logoPreview').innerHTML = `<img src="${logo}" class="w-full h-full object-contain">`;
-                localStorage.setItem('jp_pro_logo', logo);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-
-        function updatePitch() {
+        function resetPositions() {
             const f = document.getElementById('formationSelect').value;
             const gkC = document.getElementById('gkColor').value;
             const kitC = document.getElementById('kitColor').value;
@@ -187,17 +174,23 @@
             tactics[f].forEach((pos, i) => {
                 const isGK = i === 0;
                 const data = assignments[i] || { name: isGK ? "GK" : "Assign", num: isGK ? 1 : i+1 };
+                
                 const node = document.createElement('div');
-                node.className = "player-node absolute -translate-x-1/2 -translate-y-1/2 flex flex-col items-center w-24 cursor-pointer z-10";
+                node.className = "player-node flex flex-col items-center w-24";
                 node.style.top = pos.t + "%";
                 node.style.left = pos.l + "%";
+                node.draggable = true;
+                node.id = `player-${i}`;
+                
+                // Drag Events
+                node.ondragstart = (e) => { dragTarget = node; e.dataTransfer.setData("text", node.id); };
                 node.onclick = () => openModal(i);
 
                 node.innerHTML = `
-                    <div class="jersey-pattern" style="background: ${isGK ? gkC : kitC}">
-                        <span class="absolute inset-0 flex items-center justify-center text-[11px] font-black text-black mt-2">${data.num}</span>
+                    <div class="jersey-3d" style="--kit-color: ${isGK ? gkC : kitC}">
+                        <span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-black mt-2">${data.num}</span>
                     </div>
-                    <div class="player-label mt-2 px-2 py-1 rounded text-[9px] font-black uppercase text-center truncate">
+                    <div class="player-label mt-2 px-2 py-1 rounded text-[9px] font-black uppercase text-center w-full truncate" style="--kit-color: ${isGK ? gkC : kitC}">
                         ${data.name}
                     </div>
                 `;
@@ -205,37 +198,70 @@
             });
         }
 
+        // DRAG AND DROP LOGIC
+        function allowDrop(e) { e.preventDefault(); }
+        function drop(e) {
+            e.preventDefault();
+            const pitch = document.getElementById('pitch').getBoundingClientRect();
+            const x = ((e.clientX - pitch.left) / pitch.width) * 100;
+            const y = ((e.clientY - pitch.top) / pitch.height) * 100;
+            
+            if (dragTarget) {
+                dragTarget.style.left = x + "%";
+                dragTarget.style.top = y + "%";
+            }
+        }
+
+        function updatePitch() { resetPositions(); }
+
         async function downloadLineup() {
             const canvas = await html2canvas(document.getElementById('pitch'), { scale: 3, useCORS: true });
             const link = document.createElement('a');
-            link.download = 'Lineup_Pro.png';
+            link.download = `JP_Elite_Lineup.png`;
             link.href = canvas.toDataURL();
             link.click();
         }
 
-        function openModal(i) { currentSpot = i; document.getElementById('modal').classList.remove('hidden'); 
-            const s = document.getElementById('modalSelect');
-            s.innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
+        function openModal(i) {
+            currentSpot = i;
+            document.getElementById('modalSelect').innerHTML = roster.map(p => `<option value="${p}">${p}</option>`).join('');
+            document.getElementById('modal').classList.remove('hidden');
         }
-        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
         function confirmPlayer() {
             assignments[currentSpot] = { name: document.getElementById('modalSelect').value, num: document.getElementById('modalNumber').value };
-            updatePitch(); closeModal();
+            resetPositions();
+            closeModal();
         }
-        function addPlayer() { 
-            const n = document.getElementById('playerName').value; if(!n) return;
-            roster.push(n); document.getElementById('playerName').value = ''; renderRoster(); 
+
+        function addPlayer() {
+            const n = document.getElementById('playerName').value;
+            if(!n) return;
+            roster.push(n);
+            document.getElementById('playerName').value = '';
+            renderRoster();
         }
+
         function renderRoster() {
             document.getElementById('rosterList').innerHTML = roster.map((p, i) => `
                 <div class="bg-white/5 p-3 rounded-xl flex justify-between items-center border border-white/5">
                     <span class="text-xs font-bold text-slate-400">${p}</span>
-                    <button onclick="roster.splice(${i},1); renderRoster();" class="text-slate-600 hover:text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                    <button onclick="roster.splice(${i},1); renderRoster();" class="text-slate-700 hover:text-red-500"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
                 </div>
             `).join('');
             lucide.createIcons();
             localStorage.setItem('jp_pro_roster', JSON.stringify(roster));
         }
+
+        function handleLogo(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('logoPreview').innerHTML = `<img src="${e.target.result}" class="w-full h-full object-contain">`;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        function closeModal() { document.getElementById('modal').classList.add('hidden'); }
 
         init();
     </script>
